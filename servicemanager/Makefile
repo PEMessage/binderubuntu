@@ -1,7 +1,7 @@
 TARGET = servicemanager
 
-CFLAGS = -I.. -O3
-#CFLAGS = -I.. -O0 -g
+# CFLAGS = -I.. -O3
+CFLAGS = -I.. -O0 -ggdb -g3
 
 %.o: %.c
 	gcc -c $(CFLAGS) $< -o $@

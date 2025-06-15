@@ -1,4 +1,4 @@
-SUBDIRS := driver/ashmem driver/binder libs servicemanager test_client test_server
+SUBDIRS := libs servicemanager test_client test_server
 
 all:
 	@for dir in $(SUBDIRS); do \
