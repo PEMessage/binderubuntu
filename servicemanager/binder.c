@@ -14,7 +14,7 @@
 
 #define MAX_BIO_SIZE (1 << 30)
 
-#define TRACE 0
+#define TRACE 1
 
 #define ALOGI(x...) fprintf(stderr, "svcmgr: " x)
 #define ALOGE(x...) fprintf(stderr, "svcmgr: " x)
