@@ -22,7 +22,7 @@
 void bio_init_from_txn(struct binder_io *io, struct binder_transaction_data *txn);
 
 #if TRACE
-void hexdump(void *_data, size_t len)
+void hexdump_old(void *_data, size_t len)
 {
     unsigned char *data = _data;
     size_t count;
@@ -38,6 +38,85 @@ void hexdump(void *_data, size_t len)
     }
     if ((count & 15) != 0)
         fprintf(stderr,"\n");
+}
+
+void hexdump(void *_data, size_t len)
+{
+    void xxd_color2(size_t len, void* buf,FILE *fp);
+    xxd_color2(len, _data, stderr);
+}
+
+void xxd_color2(size_t len, void* buf,FILE *fp) {
+    do {
+        size_t i = 0;
+        // Larger buffer to accommodate color codes (each char could need up to ~10 bytes for color codes)
+        char str[17 * 10]; // Enough space for color codes in each character
+        char *str_ptr = str;
+
+        fprintf(fp, " Offset    0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f\n");
+
+        for (i = 0; i < len; i++) {
+            unsigned char c = *((unsigned char*)buf + i);
+
+            // Print offset at start of each line
+            if (i % 16 == 0) {
+                fprintf(fp, "%08lx  ", i/16);
+            }
+
+            // Apply color to hex value
+            if (c > 31 && c < 127) {
+                fprintf(fp, "\033[32m"); // COLOR_GREEN
+            } else if (c == 9 || c == 10 || c == 13) {
+                fprintf(fp, "\033[33m"); // COLOR_YELLOW
+            } else if (c == 0) {
+                fprintf(fp, "\033[37m"); // COLOR_WHITE
+            } else if (c == 255) {
+                fprintf(fp, "\033[34m"); // COLOR_BLUE
+            } else {
+                fprintf(fp, "\033[31m"); // COLOR_RED
+            }
+
+            // Print the byte
+            fprintf(fp, "%02x\033[0m ", c);
+
+            // Build the ASCII representation with colors
+            if (isprint(c) != 0) {
+                if (c > 31 && c < 127) {
+                    str_ptr += sprintf(str_ptr, "\033[32m%c\033[0m", c); // GREEN
+                } else if (c == 9 || c == 10 || c == 13) {
+                    str_ptr += sprintf(str_ptr, "\033[33m%c\033[0m", c); // YELLOW
+                } else {
+                    str_ptr += sprintf(str_ptr, "\033[31m%c\033[0m", c); // RED
+                }
+            } else {
+                if (c == 0) {
+                    str_ptr += sprintf(str_ptr, "\033[37m.\033[0m"); // WHITE
+                } else if (c == 255) {
+                    str_ptr += sprintf(str_ptr, "\033[34m.\033[0m"); // BLUE
+                } else {
+                    str_ptr += sprintf(str_ptr, "\033[31m.\033[0m"); // RED
+                }
+            }
+
+            // Print ASCII representation at end of line
+            if (i % 16 == 15) {
+                fprintf(fp, " |%s|", str);
+                str_ptr = str; // Reset string buffer
+                fprintf(fp, "\n");
+            }
+        }
+
+        // Handle partial last line
+        if (len % 16 != 0) {
+            for (i = 0; i < (16 - (len % 16)); i++) {
+                fprintf(fp, "   ");
+            }
+            fprintf(fp, " |%s|", str);
+            fprintf(fp, "\n");
+        }
+
+        fprintf(fp, "\n");
+    } while(0);
 }
 
 void binder_dump_txn(struct binder_transaction_data *txn)

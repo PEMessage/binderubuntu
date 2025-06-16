@@ -1,0 +1,8 @@
+*.o
+*.swp
+.cache
+compile_commands.json
+libs/libbinder.a
+servicemanager/servicemanager
+test_client/test_client
+test_server/test_server
