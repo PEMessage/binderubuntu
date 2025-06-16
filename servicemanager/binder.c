@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/mman.h>
+#include <ctype.h>
 
 #include "binder.h"
 
@@ -285,6 +286,10 @@ int binder_parse(struct binder_state *bs, struct binder_io *bio,
 {
     int r = 1;
     uintptr_t end = ptr + (uintptr_t) size;
+#if TRACE
+    fprintf(stderr,"\n\n\n============== Enter binder_parse: ===============\n");
+    hexdump((void *)ptr, size);
+#endif
 
     while (ptr < end) {
         uint32_t cmd = *(uint32_t *) ptr;
@@ -292,10 +297,12 @@ int binder_parse(struct binder_state *bs, struct binder_io *bio,
 #if TRACE
         fprintf(stderr,"%s:\n", cmd_name(cmd));
 #endif
+        // any times, enter binder_parse, it normally begin with BR_NOOP, then the actually cmd
+        // and cmd's bitfield define it's borrow rule from IOCTL
         switch(cmd) {
-        case BR_NOOP:
+        case BR_NOOP:                 // 0c 72 00 00 |.r..| // only cmd itself, not following data
             break;
-        case BR_TRANSACTION_COMPLETE:
+        case BR_TRANSACTION_COMPLETE: // 06 72 00 00 |.r..| // only cmd itself, not following data
             break;
         case BR_INCREFS:
         case BR_ACQUIRE:
@@ -306,7 +313,7 @@ int binder_parse(struct binder_state *bs, struct binder_io *bio,
 #endif
             ptr += sizeof(struct binder_ptr_cookie);
             break;
-        case BR_TRANSACTION: {
+        case BR_TRANSACTION: { // 02 72 40 80 |.r@.|
             struct binder_transaction_data *txn = (struct binder_transaction_data *) ptr;
             if ((end - ptr) < sizeof(*txn)) {
                 ALOGE("parse: txn too small!\n");
