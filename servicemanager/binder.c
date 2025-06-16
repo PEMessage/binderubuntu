@@ -128,9 +128,15 @@ void binder_dump_txn(struct binder_transaction_data *txn)
 
     fprintf(stderr,"  target %016"PRIx64"  cookie %016"PRIx64"  code %08x  flags %08x\n",
             (uint64_t)txn->target.ptr, (uint64_t)txn->cookie, txn->code, txn->flags);
-    fprintf(stderr,"  pid %8d  uid %8d  data %"PRIu64"  offs %"PRIu64"\n",
-            txn->sender_pid, txn->sender_euid, (uint64_t)txn->data_size, (uint64_t)txn->offsets_size);
+    fprintf(stderr,"  pid %8d  uid %8d\n",
+            txn->sender_pid, txn->sender_euid);
+
+    fprintf(stderr,"  data %"PRIu64"\n", (uint64_t)txn->data_size);
     hexdump((void *)(uintptr_t)txn->data.ptr.buffer, txn->data_size);
+
+    fprintf(stderr,"  offs(count of flat_binder_object * sizeof(binder_size_t)): %"PRIu64"\n",
+            (uint64_t)txn->offsets_size);
+    fprintf(stderr, "  flat_binder_object:\n");
     while (count--) {
         obj = (struct flat_binder_object *) (((char*)(uintptr_t)txn->data.ptr.buffer) + *offs++);
         fprintf(stderr,"  - type %08x  flags %08x  ptr %016"PRIx64"  cookie %016"PRIx64"\n",
