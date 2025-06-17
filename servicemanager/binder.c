@@ -144,6 +144,7 @@ void binder_dump_txn(struct binder_transaction_data *txn)
     }
 }
 
+
 #define NAME(n) case n: return #n
 const char *cmd_name(uint32_t cmd)
 {
@@ -179,6 +180,12 @@ struct binder_state
     size_t mapsize;
 };
 
+void binder_dump_bs(const struct binder_state *bs) {
+    fprintf(stderr,"  fd %d\n", bs->fd);
+    fprintf(stderr,"  mapped(addr) %p\n", bs->mapped);
+    fprintf(stderr,"  mapsize %zx \n", bs->mapsize);
+}
+
 struct binder_state *binder_open(size_t mapsize)
 {
     struct binder_state *bs;
@@ -212,6 +219,8 @@ struct binder_state *binder_open(size_t mapsize)
                 strerror(errno));
         goto fail_map;
     }
+
+    binder_dump_bs(bs);
 
     return bs;
 
