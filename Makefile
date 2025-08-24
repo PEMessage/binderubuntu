@@ -1,4 +1,4 @@
-SUBDIRS := libs servicemanager test_client test_server
+SUBDIRS := libs servicemanager test_client test_server test_refbase
 
 all:
 	@for dir in $(SUBDIRS); do \
